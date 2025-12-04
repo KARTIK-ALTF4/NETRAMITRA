@@ -24,7 +24,6 @@ wheels/
 *.egg
 
 # PyTorch
-pytorch_checkpoints/*.pth
 pytorch_runs/
 checkpoints/
 runs/

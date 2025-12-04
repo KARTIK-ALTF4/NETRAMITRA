@@ -82,6 +82,7 @@ html {
     font-size: 2rem;
     background: var(--bg-gradient);
     -webkit-background-clip: text;
+    background-clip: text;
     -webkit-text-fill-color: transparent;
     animation: pulse 2s ease-in-out infinite;
 }

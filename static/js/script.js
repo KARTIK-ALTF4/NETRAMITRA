@@ -7,9 +7,24 @@ let currentMode = null; // 'upload' or 'camera'
 // Check login status on page load
 document.addEventListener('DOMContentLoaded', async () => {
     await checkLoginStatus();
-    updateNavLinks();
-    loadHistory();
-    setupDetectionOptions();
+    
+    // Only run page-specific functions if elements exist
+    const sections = document.querySelectorAll('section');
+    if (sections.length > 0) {
+        updateNavLinks();
+    }
+    
+    // Only setup detection if on dashboard page
+    const uploadOption = document.getElementById('uploadOption');
+    if (uploadOption) {
+        setupDetectionOptions();
+    }
+    
+    // Load history if on history page
+    const historyList = document.getElementById('historyList');
+    if (historyList) {
+        loadHistory();
+    }
 });
 
 // Check if user is logged in
@@ -18,25 +33,31 @@ async function checkLoginStatus() {
         const response = await fetch('/api/check-session');
         const data = await response.json();
         
+        const loginBtn = document.getElementById('loginBtn');
+        const profileDropdown = document.getElementById('profileDropdown');
+        const profileUsername = document.getElementById('profileUsername');
+        
         if (data.logged_in) {
             isLoggedIn = true;
-            document.getElementById('loginBtn').style.display = 'none';
-            document.getElementById('profileDropdown').style.display = 'block';
-            document.getElementById('profileUsername').textContent = data.username;
+            if (loginBtn) loginBtn.style.display = 'none';
+            if (profileDropdown) profileDropdown.style.display = 'block';
+            if (profileUsername) profileUsername.textContent = data.username;
         } else {
             isLoggedIn = false;
-            document.getElementById('loginBtn').style.display = 'block';
-            document.getElementById('profileDropdown').style.display = 'none';
+            if (loginBtn) loginBtn.style.display = 'block';
+            if (profileDropdown) profileDropdown.style.display = 'none';
         }
     } catch (error) {
-        console.error('Error checking login status:', error);
+        // Silently handle - page may not have login UI
     }
 }
 
 // Smooth scroll to section
 function scrollToSection(sectionId) {
     const section = document.getElementById(sectionId);
-    section.scrollIntoView({ behavior: 'smooth' });
+    if (section) {
+        section.scrollIntoView({ behavior: 'smooth' });
+    }
 }
 
 // Update active nav link on scroll
@@ -75,36 +96,32 @@ function setupDetectionOptions() {
     const cameraMode = document.getElementById('cameraMode');
     
     if (!uploadOption || !cameraOption) {
-        console.error('❌ Detection option buttons not found');
+        // Page doesn't have detection UI - skip setup
         return;
     }
     
     // Set upload mode as default on page load
     currentMode = 'upload';
-    uploadMode.style.display = 'block';
+    if (uploadMode) uploadMode.style.display = 'block';
     uploadOption.classList.add('active');
     
     uploadOption.addEventListener('click', () => {
-        console.log('📤 Upload mode selected');
         currentMode = 'upload';
-        uploadMode.style.display = 'block';
-        cameraMode.style.display = 'none';
+        if (uploadMode) uploadMode.style.display = 'block';
+        if (cameraMode) cameraMode.style.display = 'none';
         uploadOption.classList.add('active');
         cameraOption.classList.remove('active');
         stopCamera();
     });
     
     cameraOption.addEventListener('click', () => {
-        console.log('📹 Camera mode selected');
         currentMode = 'camera';
-        uploadMode.style.display = 'none';
-        cameraMode.style.display = 'block';
+        if (uploadMode) uploadMode.style.display = 'none';
+        if (cameraMode) cameraMode.style.display = 'block';
         cameraOption.classList.add('active');
         uploadOption.classList.remove('active');
         startCamera();
     });
-    
-    console.log('✅ Detection options setup complete');
 }
 
 // ============================================================================
@@ -485,17 +502,22 @@ const sendBtn = document.getElementById('sendBtn');
 const chatMessages = document.getElementById('chatMessages');
 const quickBtns = document.querySelectorAll('.quick-btn');
 
-sendBtn.addEventListener('click', sendMessage);
-chatInput.addEventListener('keypress', (e) => {
-    if (e.key === 'Enter') {
-        sendMessage();
-    }
-});
+// Only attach event listeners if chat elements exist (dashboard page)
+if (sendBtn && chatInput) {
+    sendBtn.addEventListener('click', sendMessage);
+    chatInput.addEventListener('keypress', (e) => {
+        if (e.key === 'Enter') {
+            sendMessage();
+        }
+    });
+}
 
 quickBtns.forEach(btn => {
     btn.addEventListener('click', () => {
-        chatInput.value = btn.dataset.question;
-        sendMessage();
+        if (chatInput) {
+            chatInput.value = btn.dataset.question;
+            sendMessage();
+        }
     });
 });
 
@@ -554,154 +576,41 @@ function addMessage(text, sender) {
     chatMessages.scrollTop = chatMessages.scrollHeight;
 }
 
-// Authentication Handling
-const loginBtn = document.getElementById('loginBtn');
-const loginModal = document.getElementById('loginModal');
-const closeLoginModal = document.getElementById('closeLoginModal');
-const loginTab = document.getElementById('loginTab');
-const registerTab = document.getElementById('registerTab');
-const loginForm = document.getElementById('loginForm');
-const registerForm = document.getElementById('registerForm');
+// Authentication Handling - Logout button (only exists on dashboard/history/profile pages)
 const logoutBtn = document.getElementById('logoutBtn');
-
-loginBtn.addEventListener('click', () => {
-    loginModal.style.display = 'block';
-});
-
-closeLoginModal.addEventListener('click', () => {
-    loginModal.style.display = 'none';
-});
-
-window.addEventListener('click', (e) => {
-    if (e.target === loginModal) {
-        loginModal.style.display = 'none';
-    }
-});
-
-loginTab.addEventListener('click', () => {
-    loginTab.classList.add('active');
-    registerTab.classList.remove('active');
-    loginForm.style.display = 'block';
-    registerForm.style.display = 'none';
-    document.getElementById('modalTitle').textContent = 'Login to Your Account';
-});
-
-registerTab.addEventListener('click', () => {
-    registerTab.classList.add('active');
-    loginTab.classList.remove('active');
-    registerForm.style.display = 'block';
-    loginForm.style.display = 'none';
-    document.getElementById('modalTitle').textContent = 'Create New Account';
-});
-
-loginForm.addEventListener('submit', async (e) => {
-    e.preventDefault();
-    
-    const username = document.getElementById('loginUsername').value;
-    const password = document.getElementById('loginPassword').value;
-    
-    try {
-        const response = await fetch('/api/login', {
-            method: 'POST',
-            headers: {
-                'Content-Type': 'application/json'
-            },
-            body: JSON.stringify({ username, password })
-        });
-        
-        const data = await response.json();
-        
-        if (data.success) {
-            showFormMessage('Login successful! Welcome back.', 'success');
-            setTimeout(() => {
-                loginModal.style.display = 'none';
-                checkLoginStatus();
-                loadHistory();
-            }, 1000);
-        } else {
-            showFormMessage(data.message, 'error');
+if (logoutBtn) {
+    logoutBtn.addEventListener('click', async () => {
+        try {
+            const response = await fetch('/api/logout', {
+                method: 'POST'
+            });
+            
+            const data = await response.json();
+            
+            if (data.success) {
+                // Redirect to home page after logout
+                window.location.href = '/';
+            }
+        } catch (error) {
+            // Silent fail
         }
-    } catch (error) {
-        console.error('Error:', error);
-        showFormMessage('An error occurred. Please try again.', 'error');
-    }
-});
-
-registerForm.addEventListener('submit', async (e) => {
-    e.preventDefault();
-    
-    const username = document.getElementById('registerUsername').value;
-    const email = document.getElementById('registerEmail').value;
-    const phone = document.getElementById('registerPhone').value;
-    const password = document.getElementById('registerPassword').value;
-    const confirmPassword = document.getElementById('registerConfirmPassword').value;
-    
-    if (password !== confirmPassword) {
-        showFormMessage('Passwords do not match', 'error');
-        return;
-    }
-    
-    try {
-        const response = await fetch('/api/register', {
-            method: 'POST',
-            headers: {
-                'Content-Type': 'application/json'
-            },
-            body: JSON.stringify({ username, email, phone, password })
-        });
-        
-        const data = await response.json();
-        
-        if (data.success) {
-            showFormMessage('Registration successful! Welcome.', 'success');
-            setTimeout(() => {
-                loginModal.style.display = 'none';
-                checkLoginStatus();
-                loadHistory();
-            }, 1000);
-        } else {
-            showFormMessage(data.message, 'error');
-        }
-    } catch (error) {
-        console.error('Error:', error);
-        showFormMessage('An error occurred. Please try again.', 'error');
-    }
-});
-
-logoutBtn.addEventListener('click', async () => {
-    try {
-        const response = await fetch('/api/logout', {
-            method: 'POST'
-        });
-        
-        const data = await response.json();
-        
-        if (data.success) {
-            // Redirect to home page after logout
-            window.location.href = '/';
-        }
-    } catch (error) {
-        console.error('Error:', error);
-    }
-});
-
-function showFormMessage(message, type) {
-    const formMessage = document.getElementById('formMessage');
-    formMessage.textContent = message;
-    formMessage.className = `form-message ${type}`;
-    formMessage.style.display = 'block';
-    
-    setTimeout(() => {
-        formMessage.style.display = 'none';
-    }, 5000);
+    });
 }
 
 // History Handling
 async function loadHistory() {
+    // Check if we're on the history page
+    const historyList = document.getElementById('historyList');
+    const emptyHistory = document.getElementById('emptyHistory');
+    
+    if (!historyList || !emptyHistory) {
+        // Not on history page, skip
+        return;
+    }
+    
     if (!isLoggedIn) {
-        document.getElementById('historyLoginPrompt').style.display = 'block';
-        document.getElementById('historyList').style.display = 'none';
-        document.getElementById('emptyHistory').style.display = 'none';
+        // User not logged in - redirect to login
+        window.location.href = '/login';
         return;
     }
     
@@ -710,14 +619,12 @@ async function loadHistory() {
         const data = await response.json();
         
         if (data.success) {
-            document.getElementById('historyLoginPrompt').style.display = 'none';
-            
             if (data.history.length === 0) {
-                document.getElementById('emptyHistory').style.display = 'block';
-                document.getElementById('historyList').style.display = 'none';
+                emptyHistory.style.display = 'flex';
+                historyList.style.display = 'none';
             } else {
-                document.getElementById('emptyHistory').style.display = 'none';
-                document.getElementById('historyList').style.display = 'block';
+                emptyHistory.style.display = 'none';
+                historyList.style.display = 'grid';
                 displayHistory(data.history);
             }
         }

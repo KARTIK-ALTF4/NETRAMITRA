@@ -45,15 +45,15 @@
         </div>
         
         <div class="history-container" id="historyContainer">
-            <div class="history-list" id="historyList">
+            <div class="history-list" id="historyList" style="display: grid; grid-template-columns: repeat(auto-fill, minmax(300px, 1fr)); gap: 20px; padding: 20px;">
                 <!-- History items will be loaded here -->
             </div>
             
-            <div class="empty-history" id="emptyHistory" style="display: none;">
-                <i class="fas fa-inbox"></i>
+            <div class="empty-history" id="emptyHistory" style="display: flex; flex-direction: column; align-items: center; justify-content: center; padding: 60px 20px; text-align: center;">
+                <i class="fas fa-inbox" style="font-size: 64px; color: #ccc; margin-bottom: 20px;"></i>
                 <h3>No Screening History Yet</h3>
                 <p>Upload your first eye photo to start tracking your eye health</p>
-                <button class="cta-btn" onclick="window.location.href='/dashboard'">
+                <button class="cta-btn" onclick="window.location.href='/dashboard'" style="margin-top: 20px;">
                     <i class="fas fa-camera"></i> Start First Screening
                 </button>
             </div>
@@ -92,11 +92,5 @@
     </footer>
 
     <script src="{{ url_for('static', filename='js/script.js') }}"></script>
-    <script>
-        // Load history on page load
-        window.addEventListener('DOMContentLoaded', () => {
-            loadHistory();
-        });
-    </script>
 </body>
 </html>

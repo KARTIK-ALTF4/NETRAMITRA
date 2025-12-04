@@ -56,6 +56,15 @@ class User(db.Model):
     phone = db.Column(db.String(15), nullable=True)  # Phone number field
     password_hash = db.Column(db.String(200), nullable=False)
     created_at = db.Column(db.DateTime, default=datetime.utcnow)
+    
+    # Profile fields
+    age_group = db.Column(db.String(20), nullable=True)
+    gender = db.Column(db.String(20), nullable=True)
+    occupation = db.Column(db.String(100), nullable=True)
+    medical_conditions = db.Column(db.Text, nullable=True)
+    eye_problems_history = db.Column(db.Text, nullable=True)
+    family_history = db.Column(db.Text, nullable=True)
+    
     predictions = db.relationship('Prediction', backref='user', lazy=True)
     chats = db.relationship('ChatHistory', backref='user', lazy=True)
 
@@ -105,27 +114,48 @@ try:
     
     
     def crop_eye_from_image(image_path, padding=0.15, output_size=(224, 224)):
-        """Crop eye region from image (removes eyebrows)"""
+        """Crop eye region from image (removes eyebrows and focuses on pupil)"""
         img = cv2.imread(image_path)
         if img is None:
             return None
         
         gray = cv2.cvtColor(img, cv2.COLOR_BGR2GRAY)
+        
+        # Try eye cascade first
         eye_cascade = cv2.CascadeClassifier(cv2.data.haarcascades + 'haarcascade_eye.xml')
         eyes = eye_cascade.detectMultiScale(gray, 1.1, 5, minSize=(50, 50))
         
         if len(eyes) == 0:
-            #
-            h, w = img.shape[:2]
-            crop_size = min(h, w) // 2
-            center_x, center_y = w // 2, h // 2
-            x1 = max(0, center_x - crop_size // 2)
-            y1 = max(0, center_y - crop_size // 2)
-            x2 = min(w, x1 + crop_size)
-            y2 = min(h, y1 + crop_size)
-            cropped = img[y1:y2, x1:x2]
-        else:
+            # Fallback: Try to detect pupil using circular Hough transform
+            blurred = cv2.GaussianBlur(gray, (9, 9), 2)
+            circles = cv2.HoughCircles(blurred, cv2.HOUGH_GRADIENT, dp=1, minDist=50,
+                                      param1=100, param2=30, minRadius=20, maxRadius=100)
             
+            if circles is not None:
+                circles = np.uint16(np.around(circles))
+                # Use the largest circle (likely the pupil/iris)
+                largest_circle = max(circles[0], key=lambda c: c[2])
+                center_x, center_y, radius = largest_circle
+                
+                # Expand crop area around pupil
+                crop_radius = int(radius * 2.5)
+                x1 = max(0, center_x - crop_radius)
+                y1 = max(0, center_y - crop_radius)
+                x2 = min(img.shape[1], center_x + crop_radius)
+                y2 = min(img.shape[0], center_y + crop_radius)
+                cropped = img[y1:y2, x1:x2]
+            else:
+                # Last resort: crop center portion
+                h, w = img.shape[:2]
+                crop_size = min(h, w) // 2
+                center_x, center_y = w // 2, h // 2
+                x1 = max(0, center_x - crop_size // 2)
+                y1 = max(0, center_y - crop_size // 2)
+                x2 = min(w, x1 + crop_size)
+                y2 = min(h, y1 + crop_size)
+                cropped = img[y1:y2, x1:x2]
+        else:
+            # Use detected eye region
             (x, y, w, h) = max(eyes, key=lambda e: e[2] * e[3])
             pad_x = int(w * padding)
             pad_y = int(h * padding)
@@ -135,7 +165,7 @@ try:
             y2 = min(img.shape[0], y + h + pad_y)
             cropped = img[y1:y2, x1:x2]
         
-       
+        # Convert to RGB
         cropped = cv2.cvtColor(cropped, cv2.COLOR_BGR2RGB)
         cropped_pil = Image.fromarray(cropped)
         cropped_pil = cropped_pil.resize(output_size, Image.Resampling.LANCZOS)
@@ -317,11 +347,16 @@ def generate_gradcam_visualization(image_path, output_path):
     Generate Grad-CAM visualization showing which part of eye is affected
     """
     try:
-        # Load and preprocess image
+        # Load original image first for reference
+        original_img = Image.open(image_path).convert('RGB')
+        
+        # Try to crop eye region
         cropped_eye = crop_eye_from_image(image_path)
         if cropped_eye is None:
-            img = Image.open(image_path).convert('RGB')
+            print("⚠️ Eye detection failed, using full image")
+            img = original_img
         else:
+            print("✅ Eye region detected and cropped")
             img = cropped_eye
         
         # Preprocess
@@ -341,37 +376,70 @@ def generate_gradcam_visualization(image_path, output_path):
         gradcam = GradCAM(model, target_layer)
         cam_np, predicted_class = gradcam.generate_cam(input_tensor)
         
-        # Resize to match original image
+        # Resize to match image
         img_np = np.array(img)
         cam_resized = cv2.resize(cam_np, (img_np.shape[1], img_np.shape[0]))
         
-        # Create heatmap
-        heatmap = cv2.applyColorMap(np.uint8(255 * cam_resized), cv2.COLORMAP_JET)
-        heatmap = cv2.cvtColor(heatmap, cv2.COLOR_BGR2RGB)
+        # Create multiple threshold levels for better visualization
+        cam_high = cam_resized.copy()
+        cam_high[cam_high < 0.6] = 0  # Only very high attention
         
-        # Overlay on original image
-        overlay = cv2.addWeighted(img_np, 0.6, heatmap, 0.4, 0)
+        cam_medium = cam_resized.copy()
+        cam_medium[cam_medium < 0.3] = 0  # Medium+ attention
         
-        # Create 3-panel visualization
-        fig, axes = plt.subplots(1, 3, figsize=(15, 5))
+        # Create heatmaps with different colormaps
+        heatmap_hot = cv2.applyColorMap(np.uint8(255 * cam_medium), cv2.COLORMAP_HOT)
+        heatmap_hot = cv2.cvtColor(heatmap_hot, cv2.COLOR_BGR2RGB)
         
-        axes[0].imshow(img_np)
-        axes[0].set_title('Original Eye Image', fontsize=12, fontweight='bold')
-        axes[0].axis('off')
+        heatmap_jet = cv2.applyColorMap(np.uint8(255 * cam_resized), cv2.COLORMAP_JET)
+        heatmap_jet = cv2.cvtColor(heatmap_jet, cv2.COLOR_BGR2RGB)
         
-        axes[1].imshow(heatmap)
-        axes[1].set_title('Affected Areas (Heatmap)', fontsize=12, fontweight='bold')
-        axes[1].axis('off')
+        # Create overlays
+        overlay_hot = cv2.addWeighted(img_np, 0.5, heatmap_hot, 0.5, 0)
+        overlay_jet = cv2.addWeighted(img_np, 0.5, heatmap_jet, 0.5, 0)
         
-        axes[2].imshow(overlay)
-        axes[2].set_title('Overlay - Red = High Attention', fontsize=12, fontweight='bold')
-        axes[2].axis('off')
+        # Create 2x3 visualization
+        fig, axes = plt.subplots(2, 3, figsize=(18, 12))
+        
+        # Row 1: Original, Raw heatmap, Jet overlay
+        axes[0, 0].imshow(img_np)
+        axes[0, 0].set_title('Processed Eye Image', fontsize=13, fontweight='bold', color='navy')
+        axes[0, 0].axis('off')
+        
+        im1 = axes[0, 1].imshow(cam_resized, cmap='hot', vmin=0, vmax=1)
+        axes[0, 1].set_title('Attention Heatmap (Raw)', fontsize=13, fontweight='bold', color='darkred')
+        axes[0, 1].axis('off')
+        plt.colorbar(im1, ax=axes[0, 1], fraction=0.046, pad=0.04)
+        
+        axes[0, 2].imshow(overlay_jet)
+        axes[0, 2].set_title('JET Colormap Overlay\n(Blue=Low, Red=High)', fontsize=13, fontweight='bold', color='purple')
+        axes[0, 2].axis('off')
+        
+        # Row 2: High attention only, Medium attention, Hot overlay
+        im2 = axes[1, 0].imshow(cam_high, cmap='Reds', vmin=0, vmax=1)
+        axes[1, 0].set_title('High Attention Only (>60%)', fontsize=13, fontweight='bold', color='darkred')
+        axes[1, 0].axis('off')
+        plt.colorbar(im2, ax=axes[1, 0], fraction=0.046, pad=0.04)
+        
+        im3 = axes[1, 1].imshow(cam_medium, cmap='YlOrRd', vmin=0, vmax=1)
+        axes[1, 1].set_title('Medium+ Attention (>30%)', fontsize=13, fontweight='bold', color='darkorange')
+        axes[1, 1].axis('off')
+        plt.colorbar(im3, ax=axes[1, 1], fraction=0.046, pad=0.04)
+        
+        axes[1, 2].imshow(overlay_hot)
+        axes[1, 2].set_title('HOT Colormap Overlay\n(Focus Areas)', fontsize=13, fontweight='bold', color='darkred')
+        axes[1, 2].axis('off')
+        
+        # Add main title
+        class_names = ['Cataract', 'Normal']
+        fig.suptitle(f'🔍 Grad-CAM Deep Analysis - Model Focus Regions\nPrediction: {class_names[predicted_class]} | White/Red Areas = High Model Attention', 
+                    fontsize=15, fontweight='bold', y=0.98, color='darkblue')
         
         plt.tight_layout()
         plt.savefig(output_path, dpi=150, bbox_inches='tight')
         plt.close()
         
-        print(f"✅ Grad-CAM visualization saved to: {output_path}")
+        print(f"✅ Enhanced Grad-CAM visualization saved to: {output_path}")
         return output_path
         
     except Exception as e:
@@ -912,6 +980,49 @@ def download_report(prediction_id):
     doc.build(story)
     
     return send_file(pdf_path, as_attachment=True, download_name=pdf_filename, mimetype='application/pdf')
+
+@app.route('/api/profile', methods=['GET', 'POST'])
+@login_required
+def profile_api():
+    user = User.query.get(session['user_id'])
+    
+    if request.method == 'GET':
+        # Return profile data
+        return jsonify({
+            'success': True,
+            'profile': {
+                'username': user.username,
+                'email': user.email,
+                'phone_number': user.phone or '',
+                'age_group': user.age_group or '',
+                'gender': user.gender or '',
+                'occupation': user.occupation or '',
+                'medical_conditions': user.medical_conditions or '',
+                'eye_problems_history': user.eye_problems_history or '',
+                'family_history': user.family_history or '',
+                'member_since': user.created_at.strftime('%B %Y')
+            }
+        })
+    
+    elif request.method == 'POST':
+        # Update profile
+        data = request.get_json()
+        
+        try:
+            user.phone = data.get('phone_number', user.phone)
+            user.age_group = data.get('age_group', user.age_group)
+            user.gender = data.get('gender', user.gender)
+            user.occupation = data.get('occupation', user.occupation)
+            user.medical_conditions = data.get('medical_conditions', user.medical_conditions)
+            user.eye_problems_history = data.get('eye_problems_history', user.eye_problems_history)
+            user.family_history = data.get('family_history', user.family_history)
+            
+            db.session.commit()
+            
+            return jsonify({'success': True, 'message': 'Profile updated successfully'})
+        except Exception as e:
+            db.session.rollback()
+            return jsonify({'success': False, 'message': str(e)}), 500
 
 if __name__ == '__main__':
     app.run(debug=True, host='0.0.0.0', port=5000)
