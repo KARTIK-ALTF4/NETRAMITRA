@@ -17,23 +17,12 @@
             </div>
             <div class="nav-links">
                 <a href="#home" class="nav-link active">Home</a>
-                <a href="#detect" class="nav-link">Detect</a>
-                <a href="#chat" class="nav-link">Chat</a>
-                <a href="#history" class="nav-link">History</a>
+                <a href="/login" class="nav-link">Login</a>
             </div>
             <div class="nav-profile">
-                <button class="login-btn" id="loginBtn">
-                    <i class="fas fa-user"></i> Login
-                </button>
-                <div class="profile-dropdown" id="profileDropdown" style="display: none;">
-                    <div class="profile-info">
-                        <i class="fas fa-user-circle"></i>
-                        <span id="profileUsername"></span>
-                    </div>
-                    <button class="logout-btn" id="logoutBtn">
-                        <i class="fas fa-sign-out-alt"></i> Logout
-                    </button>
-                </div>
+                <a href="/login" class="login-btn">
+                    <i class="fas fa-sign-in-alt"></i> Get Started
+                </a>
             </div>
         </div>
     </nav>
@@ -47,28 +36,28 @@
                 <p class="hindi-text">समय पर पहचान से बचती है आँखों की रोशनी। अपनी आँख की फोटो अपलोड करें।</p>
                 <div class="hero-stats">
                     <div class="stat">
-                        <i class="fas fa-check-circle"></i>
+                        <i class="fas fa-brain"></i>
                         <div>
-                            <strong>97%+</strong>
-                            <span>Accuracy</span>
+                            <strong>AI Model</strong>
+                            <span>EfficientNet-B0</span>
                         </div>
                     </div>
                     <div class="stat">
                         <i class="fas fa-bolt"></i>
                         <div>
-                            <strong>2 Sec</strong>
-                            <span>Analysis</span>
+                            <strong>Fast</strong>
+                            <span>Instant Results</span>
                         </div>
                     </div>
                     <div class="stat">
                         <i class="fas fa-mobile-alt"></i>
                         <div>
-                            <strong>Any Phone</strong>
+                            <strong>Any Device</strong>
                             <span>Works Everywhere</span>
                         </div>
                     </div>
                 </div>
-                <button class="cta-btn" onclick="scrollToSection('detect')">
+                <button class="cta-btn" onclick="window.location.href='/login'">
                     <i class="fas fa-camera"></i> Start Detection
                 </button>
             </div>
@@ -80,263 +69,6 @@
         </div>
     </section>
 
-    <!-- Detection Section -->
-    <section id="detect" class="detect-section">
-        <div class="section-header">
-            <h2><i class="fas fa-camera"></i> NETRAMITRA Detection</h2>
-            <p>Upload image or use live camera for instant detection</p>
-            <p class="hindi-text">फोटो अपलोड करें या लाइव कैमरा इस्तेमाल करें</p>
-        </div>
-        
-        <div class="detection-options">
-            <button class="option-btn" id="uploadOption">
-                <i class="fas fa-upload"></i>
-                <span>Upload Photo</span>
-                <small>फोटो अपलोड करें</small>
-            </button>
-            <button class="option-btn" id="cameraOption">
-                <i class="fas fa-video"></i>
-                <span>Live Camera</span>
-                <small>लाइव कैमरा</small>
-            </button>
-        </div>
-        
-        <!-- Upload Mode -->
-        <div class="upload-container" id="uploadMode" style="display: none;">
-            <div class="upload-box" id="uploadBox">
-                <div class="upload-icon">
-                    <i class="fas fa-cloud-upload-alt"></i>
-                </div>
-                <h3>Click to Upload or Drag & Drop</h3>
-                <p>Supports: JPG, PNG, JPEG (Max 16MB)</p>
-                <p class="hindi-text">फोटो यहाँ अपलोड करें</p>
-                <input type="file" id="fileInput" accept="image/*" style="display: none;">
-                <button class="upload-btn" id="uploadBtn">
-                    <i class="fas fa-folder-open"></i> Choose File
-                </button>
-            </div>
-            
-            <div class="preview-box" id="previewBox" style="display: none;">
-                <img id="previewImage" src="" alt="Preview">
-                <button class="remove-btn" id="removeBtn">
-                    <i class="fas fa-times"></i>
-                </button>
-            </div>
-            
-            <button class="analyze-btn" id="analyzeBtn" style="display: none;">
-                <i class="fas fa-brain"></i> Analyze Image
-            </button>
-        </div>
-        
-        <!-- Camera Mode -->
-        <div class="camera-container" id="cameraMode" style="display: none;">
-            <div class="camera-box">
-                <video id="cameraVideo" autoplay playsinline></video>
-                <canvas id="cameraCanvas" style="display: none;"></canvas>
-                <div class="camera-overlay">
-                    <div class="eye-guide">
-                        <i class="fas fa-eye"></i>
-                        <p>Position your eye in the center</p>
-                        <p class="hindi-text">अपनी आँख को बीच में रखें</p>
-                    </div>
-                </div>
-            </div>
-            <div class="camera-controls">
-                <button class="camera-btn" id="captureBtn">
-                    <i class="fas fa-camera"></i> Capture Photo
-                </button>
-                <button class="camera-btn secondary" id="stopCameraBtn">
-                    <i class="fas fa-stop"></i> Stop Camera
-                </button>
-            </div>
-        </div>
-        
-        <div class="result-container" id="resultContainer" style="display: none;">
-            <div class="result-card">
-                <div class="result-icon" id="resultIcon">
-                    <i class="fas fa-check-circle"></i>
-                </div>
-                <h3 id="resultTitle">Analysis Complete</h3>
-                <div class="result-badge" id="resultBadge">No Cataract Detected</div>
-                <div class="confidence-bar">
-                    <div class="confidence-label">
-                        <span>Confidence</span>
-                        <span id="confidenceValue">95%</span>
-                    </div>
-                    <div class="confidence-track">
-                        <div class="confidence-fill" id="confidenceFill"></div>
-                    </div>
-                </div>
-                
-                <!-- Grad-CAM Visualization -->
-                <div class="gradcam-container" id="gradcamContainer" style="display: none;">
-                    <h4><i class="fas fa-eye"></i> Affected Areas Analysis</h4>
-                    <p class="gradcam-description">Red areas show which parts of the eye influenced the AI's decision</p>
-                    <img id="gradcamImage" src="" alt="Grad-CAM Visualization" style="width: 100%; border-radius: 8px; margin-top: 10px;">
-                </div>
-                
-                <div class="result-advice" id="resultAdvice"></div>
-                <button class="new-test-btn" id="newTestBtn">
-                    <i class="fas fa-redo"></i> Test Another Image
-                </button>
-            </div>
-        </div>
-        
-        <div class="tips-box">
-            <h3><i class="fas fa-lightbulb"></i> Tips for Best Results</h3>
-            <ul>
-                <li>Use natural daylight or bright indoor lighting</li>
-                <li>Hold camera 10-15cm away from eye</li>
-                <li>Keep eye wide open and look straight at camera</li>
-                <li>Remove glasses if wearing any</li>
-                <li>Ensure photo is clear and in focus</li>
-            </ul>
-        </div>
-    </section>
-
-    <!-- Chatbot Section -->
-    <section id="chat" class="chat-section">
-        <div class="section-header">
-            <h2><i class="fas fa-comments"></i> NETRAMITRA Health Assistant</h2>
-            <p>Ask me anything about cataracts, symptoms, treatment, or prevention</p>
-            <p class="hindi-text">मोतियाबिंद के बारे में कुछ भी पूछें</p>
-        </div>
-        
-        <div class="chat-container">
-            <div class="chat-messages" id="chatMessages">
-                <div class="chat-message bot-message">
-                    <div class="message-avatar">
-                        <i class="fas fa-robot"></i>
-                    </div>
-                    <div class="message-content">
-                        <p>🙏 Namaste! I'm NETRAMITRA, your AI Cataract Detection Assistant. I can help you with:</p>
-                        <ul>
-                            <li>✅ Understanding cataracts</li>
-                            <li>✅ Symptoms and causes</li>
-                            <li>✅ Treatment options</li>
-                            <li>✅ Prevention tips</li>
-                            <li>✅ How to use this app</li>
-                        </ul>
-                        <p>What would you like to know? 😊</p>
-                    </div>
-                </div>
-            </div>
-            
-            <div class="chat-input-container">
-                <input type="text" id="chatInput" placeholder="Type your question in English or Hindi..." class="chat-input">
-                <button id="sendBtn" class="send-btn">
-                    <i class="fas fa-paper-plane"></i>
-                </button>
-            </div>
-            
-            <div class="quick-questions">
-                <button class="quick-btn" data-question="What is cataract?">What is cataract?</button>
-                <button class="quick-btn" data-question="What are symptoms?">Symptoms?</button>
-                <button class="quick-btn" data-question="Treatment options">Treatment?</button>
-                <button class="quick-btn" data-question="How to prevent?">Prevention?</button>
-                <button class="quick-btn" data-question="How to use app?">How to use?</button>
-            </div>
-        </div>
-    </section>
-
-    <!-- History Section -->
-    <section id="history" class="history-section">
-        <div class="section-header">
-            <h2><i class="fas fa-history"></i> Your Screening History</h2>
-            <p>Track your eye health screenings over time</p>
-            <p class="hindi-text">अपनी जांच का इतिहास देखें</p>
-        </div>
-        
-        <div class="history-container" id="historyContainer">
-            <div class="login-prompt" id="historyLoginPrompt">
-                <i class="fas fa-lock"></i>
-                <h3>Login Required</h3>
-                <p>Please login to view your screening history</p>
-                <button class="cta-btn" onclick="document.getElementById('loginBtn').click()">
-                    <i class="fas fa-sign-in-alt"></i> Login Now
-                </button>
-            </div>
-            
-            <div class="history-list" id="historyList" style="display: none;">
-                <!-- History items will be loaded here -->
-            </div>
-            
-            <div class="empty-history" id="emptyHistory" style="display: none;">
-                <i class="fas fa-inbox"></i>
-                <h3>No Screening History Yet</h3>
-                <p>Upload your first eye photo to start tracking your eye health</p>
-                <button class="cta-btn" onclick="scrollToSection('detect')">
-                    <i class="fas fa-camera"></i> Start First Screening
-                </button>
-            </div>
-        </div>
-    </section>
-
-    <!-- Login Modal -->
-    <div class="modal" id="loginModal">
-        <div class="modal-content">
-            <span class="close-modal" id="closeLoginModal">&times;</span>
-            <div class="modal-header">
-                <i class="fas fa-user-circle"></i>
-                <h2 id="modalTitle">Login to Your Account</h2>
-            </div>
-            
-            <div class="auth-tabs">
-                <button class="auth-tab active" id="loginTab">Login</button>
-                <button class="auth-tab" id="registerTab">Register</button>
-            </div>
-            
-            <form id="loginForm" class="auth-form">
-                <div class="form-group">
-                    <label><i class="fas fa-user"></i> Username</label>
-                    <input type="text" id="loginUsername" required>
-                </div>
-                <div class="form-group">
-                    <label><i class="fas fa-lock"></i> Password</label>
-                    <input type="password" id="loginPassword" required>
-                </div>
-                <button type="submit" class="submit-btn">
-                    <i class="fas fa-sign-in-alt"></i> Login
-                </button>
-            </form>
-            
-            <form id="registerForm" class="auth-form" style="display: none;">
-                <div class="form-group">
-                    <label><i class="fas fa-user"></i> Username</label>
-                    <input type="text" id="registerUsername" required>
-                </div>
-                <div class="form-group">
-                    <label><i class="fas fa-envelope"></i> Email</label>
-                    <input type="email" id="registerEmail" required>
-                </div>
-                <div class="form-group">
-                    <label><i class="fas fa-phone"></i> Phone Number (Optional)</label>
-                    <input type="tel" id="registerPhone" placeholder="+91 1234567890">
-                    <small style="color: #888; font-size: 12px;">For SMS notifications / SMS सूचनाओं के लिए</small>
-                </div>
-                <div class="form-group">
-                    <label><i class="fas fa-lock"></i> Password</label>
-                    <input type="password" id="registerPassword" required>
-                </div>
-                <div class="form-group">
-                    <label><i class="fas fa-lock"></i> Confirm Password</label>
-                    <input type="password" id="registerConfirmPassword" required>
-                </div>
-                <button type="submit" class="submit-btn">
-                    <i class="fas fa-user-plus"></i> Register
-                </button>
-            </form>
-            
-            <div class="form-message" id="formMessage"></div>
-        </div>
-    </div>
-
-    <!-- Loading Spinner -->
-    <div class="loading-overlay" id="loadingOverlay" style="display: none;">
-        <div class="spinner"></div>
-        <p>Analyzing image...</p>
-    </div>
-
     <!-- Footer -->
     <footer class="footer">
         <div class="footer-content">
@@ -347,10 +79,8 @@
             </div>
             <div class="footer-section">
                 <h4>Quick Links</h4>
-                <a href="#home">Home</a>
-                <a href="#detect">Detection</a>
-                <a href="#chat">Chatbot</a>
-                <a href="#history">History</a>
+                <a href="/">Home</a>
+                <a href="/login">Login</a>
             </div>
             <div class="footer-section">
                 <h4>Important</h4>

@@ -3,6 +3,7 @@ from flask_sqlalchemy import SQLAlchemy
 from flask_cors import CORS
 from werkzeug.utils import secure_filename
 from werkzeug.security import generate_password_hash, check_password_hash
+from functools import wraps
 from datetime import datetime
 import os
 import base64
@@ -82,6 +83,15 @@ class ChatHistory(db.Model):
 # Create tables 
 with app.app_context():
     db.create_all()
+
+# Login Required Decorator
+def login_required(f):
+    @wraps(f)
+    def decorated_function(*args, **kwargs):
+        if 'user_id' not in session:
+            return redirect(url_for('login_page'))
+        return f(*args, **kwargs)
+    return decorated_function
 
 
 print("Loading PyTorch model with eye cropping...")
@@ -468,6 +478,28 @@ with app.app_context():
 @app.route('/')
 def index():
     return render_template('index.html')
+
+@app.route('/login')
+def login_page():
+    # If already logged in, redirect to dashboard
+    if 'user_id' in session:
+        return redirect(url_for('dashboard'))
+    return render_template('login.html')
+
+@app.route('/dashboard')
+@login_required
+def dashboard():
+    return render_template('dashboard.html')
+
+@app.route('/history')
+@login_required
+def history():
+    return render_template('history.html')
+
+@app.route('/profile')
+@login_required
+def profile():
+    return render_template('profile.html')
 
 @app.route('/camera-test')
 def camera_test():

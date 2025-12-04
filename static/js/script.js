@@ -677,10 +677,8 @@ logoutBtn.addEventListener('click', async () => {
         const data = await response.json();
         
         if (data.success) {
-            checkLoginStatus();
-            document.getElementById('historyList').style.display = 'none';
-            document.getElementById('emptyHistory').style.display = 'none';
-            document.getElementById('historyLoginPrompt').style.display = 'block';
+            // Redirect to home page after logout
+            window.location.href = '/';
         }
     } catch (error) {
         console.error('Error:', error);
