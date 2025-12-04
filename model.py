@@ -14,10 +14,11 @@ class CataractClassifier(nn.Module):
     
     def __init__(self, num_classes=2, dropout_rate=0.5, freeze_backbone=False):
         """
+        Initialize cataract detection model
         Args:
-            num_classes (int): Number of output classes (default: 2 for binary classification)
-            dropout_rate (float): Dropout probability for regularization (default: 0.5)
-            freeze_backbone (bool): If True, freeze all backbone layers (default: False)
+            num_classes: Number of output classes (default: 2)
+            dropout_rate: Dropout probability (default: 0.5)
+            freeze_backbone: Freeze backbone layers (default: False)
         """
         super(CataractClassifier, self).__init__()
         
@@ -30,11 +31,11 @@ class CataractClassifier(nn.Module):
         
         # Replace the final classifier with custom head
         self.backbone.classifier = nn.Sequential(
-            nn.Dropout(p=dropout_rate, inplace=True),  # Dropout for regularization
-            nn.Linear(in_features, 512),               # Dense layer 1
-            nn.ReLU(inplace=True),                     # Activation
-            nn.Dropout(p=dropout_rate * 0.5),          # Mild dropout (0.25 if dropout_rate=0.5)
-            nn.Linear(512, num_classes)                # Output layer (2 classes)
+            nn.Dropout(p=dropout_rate, inplace=True),  
+            nn.Linear(in_features, 512),               
+            nn.ReLU(inplace=True),                     
+            nn.Dropout(p=dropout_rate * 0.5),          
+            nn.Linear(512, num_classes)                
         )
         
         # Optionally freeze backbone layers
