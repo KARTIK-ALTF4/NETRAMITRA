@@ -79,6 +79,11 @@ function setupDetectionOptions() {
         return;
     }
     
+    // Set upload mode as default on page load
+    currentMode = 'upload';
+    uploadMode.style.display = 'block';
+    uploadOption.classList.add('active');
+    
     uploadOption.addEventListener('click', () => {
         console.log('📤 Upload mode selected');
         currentMode = 'upload';
@@ -116,6 +121,17 @@ async function startCamera() {
             return;
         }
         
+        // Check if page is served over HTTPS or localhost
+        const isSecure = window.location.protocol === 'https:' || 
+                        window.location.hostname === 'localhost' || 
+                        window.location.hostname === '127.0.0.1' ||
+                        window.location.hostname.startsWith('192.168.');
+        
+        if (!isSecure) {
+            alert('⚠️ Camera requires HTTPS or localhost.\n\nPlease access the app via:\n• https://... (secure connection)\n• http://localhost:5000\n• http://127.0.0.1:5000\n\nOr use "Upload Photo" option instead.');
+            return;
+        }
+        
         // Check browser compatibility
         console.log('Browser info:', {
             hasMediaDevices: !!navigator.mediaDevices,
@@ -134,9 +150,9 @@ async function startCamera() {
         // Request camera access with basic constraints
         cameraStream = await navigator.mediaDevices.getUserMedia({
             video: {
-                facingMode: 'user',
-                width: { ideal: 640 },
-                height: { ideal: 480 }
+                facingMode: 'user', // Front camera for selfies
+                width: { ideal: 1280 },
+                height: { ideal: 720 }
             },
             audio: false
         });
@@ -149,6 +165,7 @@ async function startCamera() {
         cameraVideo.onloadedmetadata = () => {
             cameraVideo.play();
             console.log('✅ Camera started successfully');
+            console.log(`📹 Camera resolution: ${cameraVideo.videoWidth}x${cameraVideo.videoHeight}`);
         };
         
     } catch (error) {
@@ -156,29 +173,40 @@ async function startCamera() {
         console.error('Error name:', error.name);
         console.error('Error message:', error.message);
         
-        let errorMsg = 'Camera Error:\n\n';
+        let errorMsg = '🎥 Camera Error\n\n';
         
         if (error.name === 'NotAllowedError' || error.name === 'PermissionDeniedError') {
-            errorMsg += '❌ Camera permission denied.\n';
-            errorMsg += '✅ Please allow camera access in browser settings.\n\n';
+            errorMsg += '❌ Camera permission denied.\n\n';
+            errorMsg += 'To fix:\n';
+            errorMsg += '1. Click the 🔒 or ⓘ icon in your browser address bar\n';
+            errorMsg += '2. Allow camera access for this site\n';
+            errorMsg += '3. Refresh the page (F5)\n';
+            errorMsg += '4. Click "Live Camera" again\n\n';
             errorMsg += 'कैमरा परमिशन नहीं मिली। ब्राउज़र सेटिंग में Allow करें।';
         } else if (error.name === 'NotFoundError' || error.name === 'DevicesNotFoundError') {
             errorMsg += '❌ No camera found on this device.\n\n';
-            errorMsg += 'इस डिवाइस में कैमरा नहीं मिला।';
+            errorMsg += 'Please use "Upload Photo" option instead.\n\n';
+            errorMsg += 'इस डिवाइस में कैमरा नहीं मिला। "Upload Photo" इस्तेमाल करें।';
         } else if (error.name === 'NotReadableError' || error.name === 'TrackStartError') {
-            errorMsg += '❌ Camera is already in use by another app.\n';
-            errorMsg += '✅ Close other apps using camera.\n\n';
+            errorMsg += '❌ Camera is already in use.\n\n';
+            errorMsg += 'To fix:\n';
+            errorMsg += '1. Close other apps using the camera\n';
+            errorMsg += '2. Close other browser tabs with camera\n';
+            errorMsg += '3. Refresh this page (F5)\n\n';
             errorMsg += 'कैमरा किसी और ऐप में इस्तेमाल हो रहा है।';
         } else if (error.message && error.message.includes('not supported')) {
-            errorMsg += '❌ Camera not supported.\n\n';
-            errorMsg += 'Please use "Upload Photo" option instead.\n\n';
+            errorMsg += '❌ Camera not supported in this browser.\n\n';
+            errorMsg += 'Please:\n';
+            errorMsg += '1. Use Chrome, Edge, or Firefox browser\n';
+            errorMsg += '2. Or use "Upload Photo" option\n\n';
             errorMsg += '"Upload Photo" ऑप्शन इस्तेमाल करें।';
         } else {
             errorMsg += '❌ ' + error.message + '\n\n';
-            errorMsg += 'Try:\n';
-            errorMsg += '1. Refresh page (Ctrl+R)\n';
-            errorMsg += '2. Check browser permissions\n';
-            errorMsg += '3. Use "Upload Photo" option\n\n';
+            errorMsg += 'Troubleshooting:\n';
+            errorMsg += '1. Refresh page (F5)\n';
+            errorMsg += '2. Check browser camera permissions\n';
+            errorMsg += '3. Try another browser (Chrome/Edge/Firefox)\n';
+            errorMsg += '4. Or use "Upload Photo" option\n\n';
             errorMsg += 'या फिर "Upload Photo" ऑप्शन इस्तेमाल करें।';
         }
         
