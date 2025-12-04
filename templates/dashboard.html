@@ -1,0 +1,231 @@
+<!DOCTYPE html>
+<html lang="en">
+<head>
+    <meta charset="UTF-8">
+    <meta name="viewport" content="width=device-width, initial-scale=1.0">
+    <title>Dashboard - NETRAMITRA</title>
+    <link rel="stylesheet" href="{{ url_for('static', filename='css/style.css') }}">
+    <link rel="stylesheet" href="https://cdnjs.cloudflare.com/ajax/libs/font-awesome/6.4.0/css/all.min.css">
+</head>
+<body>
+    <!-- Navigation Bar -->
+    <nav class="navbar">
+        <div class="nav-container">
+            <div class="nav-logo">
+                <i class="fas fa-eye"></i>
+                <span>NETRAMITRA</span>
+            </div>
+            <div class="nav-links">
+                <a href="/" class="nav-link">Home</a>
+                <a href="/dashboard" class="nav-link active">Detect</a>
+                <a href="/dashboard#chat" class="nav-link">Chat</a>
+                <a href="/history" class="nav-link">History</a>
+                <a href="/profile" class="nav-link">Profile</a>
+            </div>
+            <div class="nav-profile">
+                <div class="profile-dropdown">
+                    <div class="profile-info">
+                        <i class="fas fa-user-circle"></i>
+                        <span id="profileUsername">{{ session.get('username', 'User') }}</span>
+                    </div>
+                    <button class="logout-btn" id="logoutBtn">
+                        <i class="fas fa-sign-out-alt"></i> Logout
+                    </button>
+                </div>
+            </div>
+        </div>
+    </nav>
+
+    <!-- Detection Section -->
+    <section id="detect" class="detect-section">
+        <div class="section-header">
+            <h2><i class="fas fa-camera"></i> NETRAMITRA Detection</h2>
+            <p>Upload image or use live camera for instant detection</p>
+            <p class="hindi-text">फोटो अपलोड करें या लाइव कैमरा इस्तेमाल करें</p>
+        </div>
+        
+        <div class="detection-options">
+            <button class="option-btn" id="uploadOption">
+                <i class="fas fa-upload"></i>
+                <span>Upload Photo</span>
+                <small>फोटो अपलोड करें</small>
+            </button>
+            <button class="option-btn" id="cameraOption">
+                <i class="fas fa-video"></i>
+                <span>Live Camera</span>
+                <small>लाइव कैमरा</small>
+            </button>
+        </div>
+        
+        <!-- Upload Mode -->
+        <div class="upload-container" id="uploadMode" style="display: none;">
+            <div class="upload-box" id="uploadBox">
+                <div class="upload-icon">
+                    <i class="fas fa-cloud-upload-alt"></i>
+                </div>
+                <h3>Click to Upload or Drag & Drop</h3>
+                <p>Supports: JPG, PNG, JPEG (Max 16MB)</p>
+                <p class="hindi-text">फोटो यहाँ अपलोड करें</p>
+                <input type="file" id="fileInput" accept="image/*" style="display: none;">
+                <button class="upload-btn" id="uploadBtn">
+                    <i class="fas fa-folder-open"></i> Choose File
+                </button>
+            </div>
+            
+            <div class="preview-box" id="previewBox" style="display: none;">
+                <img id="previewImage" src="" alt="Preview">
+                <button class="remove-btn" id="removeBtn">
+                    <i class="fas fa-times"></i>
+                </button>
+            </div>
+            
+            <button class="analyze-btn" id="analyzeBtn" style="display: none;">
+                <i class="fas fa-brain"></i> Analyze Image
+            </button>
+        </div>
+        
+        <!-- Camera Mode -->
+        <div class="camera-container" id="cameraMode" style="display: none;">
+            <div class="camera-box">
+                <video id="cameraVideo" autoplay playsinline></video>
+                <canvas id="cameraCanvas" style="display: none;"></canvas>
+                <div class="camera-overlay">
+                    <div class="eye-guide">
+                        <i class="fas fa-eye"></i>
+                        <p>Position your eye in the center</p>
+                        <p class="hindi-text">अपनी आँख को बीच में रखें</p>
+                    </div>
+                </div>
+            </div>
+            <div class="camera-controls">
+                <button class="camera-btn" id="captureBtn">
+                    <i class="fas fa-camera"></i> Capture Photo
+                </button>
+                <button class="camera-btn secondary" id="stopCameraBtn">
+                    <i class="fas fa-stop"></i> Stop Camera
+                </button>
+            </div>
+        </div>
+        
+        <div class="result-container" id="resultContainer" style="display: none;">
+            <div class="result-card">
+                <div class="result-icon" id="resultIcon">
+                    <i class="fas fa-check-circle"></i>
+                </div>
+                <h3 id="resultTitle">Analysis Complete</h3>
+                <div class="result-badge" id="resultBadge">No Cataract Detected</div>
+                <div class="confidence-bar">
+                    <div class="confidence-label">
+                        <span>Confidence</span>
+                        <span id="confidenceValue">95%</span>
+                    </div>
+                    <div class="confidence-track">
+                        <div class="confidence-fill" id="confidenceFill"></div>
+                    </div>
+                </div>
+                
+                <!-- Grad-CAM Visualization -->
+                <div class="gradcam-container" id="gradcamContainer" style="display: none;">
+                    <h4><i class="fas fa-eye"></i> Affected Areas Analysis</h4>
+                    <p class="gradcam-description">Red areas show which parts of the eye influenced the AI's decision</p>
+                    <img id="gradcamImage" src="" alt="Grad-CAM Visualization" style="width: 100%; border-radius: 8px; margin-top: 10px;">
+                </div>
+                
+                <div class="result-advice" id="resultAdvice"></div>
+                <button class="new-test-btn" id="newTestBtn">
+                    <i class="fas fa-redo"></i> Test Another Image
+                </button>
+            </div>
+        </div>
+        
+        <div class="tips-box">
+            <h3><i class="fas fa-lightbulb"></i> Tips for Best Results</h3>
+            <ul>
+                <li>Use natural daylight or bright indoor lighting</li>
+                <li>Hold camera 10-15cm away from eye</li>
+                <li>Keep eye wide open and look straight at camera</li>
+                <li>Remove glasses if wearing any</li>
+                <li>Ensure photo is clear and in focus</li>
+            </ul>
+        </div>
+    </section>
+
+    <!-- Chatbot Section -->
+    <section id="chat" class="chat-section">
+        <div class="section-header">
+            <h2><i class="fas fa-comments"></i> NETRAMITRA Health Assistant</h2>
+            <p>Ask me anything about cataracts, symptoms, treatment, or prevention</p>
+            <p class="hindi-text">मोतियाबिंद के बारे में कुछ भी पूछें</p>
+        </div>
+        
+        <div class="chat-container">
+            <div class="chat-messages" id="chatMessages">
+                <div class="chat-message bot-message">
+                    <div class="message-avatar">
+                        <i class="fas fa-robot"></i>
+                    </div>
+                    <div class="message-content">
+                        <p>🙏 Namaste! I'm NETRAMITRA, your AI Cataract Detection Assistant. I can help you with:</p>
+                        <ul>
+                            <li>✅ Understanding cataracts</li>
+                            <li>✅ Symptoms and causes</li>
+                            <li>✅ Treatment options</li>
+                            <li>✅ Prevention tips</li>
+                            <li>✅ How to use this app</li>
+                        </ul>
+                        <p>What would you like to know? 😊</p>
+                    </div>
+                </div>
+            </div>
+            
+            <div class="chat-input-container">
+                <input type="text" id="chatInput" placeholder="Type your question in English or Hindi..." class="chat-input">
+                <button id="sendBtn" class="send-btn">
+                    <i class="fas fa-paper-plane"></i>
+                </button>
+            </div>
+            
+            <div class="quick-questions">
+                <button class="quick-btn" data-question="What is cataract?">What is cataract?</button>
+                <button class="quick-btn" data-question="What are symptoms?">Symptoms?</button>
+                <button class="quick-btn" data-question="Treatment options">Treatment?</button>
+                <button class="quick-btn" data-question="How to prevent?">Prevention?</button>
+                <button class="quick-btn" data-question="How to use app?">How to use?</button>
+            </div>
+        </div>
+    </section>
+
+    <!-- Loading Spinner -->
+    <div class="loading-overlay" id="loadingOverlay" style="display: none;">
+        <div class="spinner"></div>
+        <p>Analyzing image...</p>
+    </div>
+
+    <!-- Footer -->
+    <footer class="footer">
+        <div class="footer-content">
+            <div class="footer-section">
+                <h3><i class="fas fa-eye"></i> NETRAMITRA</h3>
+                <p>AI-powered cataract detection for everyone, everywhere.</p>
+                <p class="hindi-text">सबके लिए, हर जगह मोतियाबिंद की पहचान</p>
+            </div>
+            <div class="footer-section">
+                <h4>Quick Links</h4>
+                <a href="/">Home</a>
+                <a href="/dashboard">Detection</a>
+                <a href="/history">History</a>
+                <a href="/profile">Profile</a>
+            </div>
+            <div class="footer-section">
+                <h4>Important</h4>
+                <p><strong>⚠️ Disclaimer:</strong> This is a screening tool, not a medical diagnosis. Always consult an ophthalmologist for proper examination.</p>
+            </div>
+        </div>
+        <div class="footer-bottom">
+            <p>&copy; 2024 NETRAMITRA. Made with ❤️ for farmers and everyone who needs accessible eye care.</p>
+        </div>
+    </footer>
+
+    <script src="{{ url_for('static', filename='js/script.js') }}"></script>
+</body>
+</html>
