@@ -249,6 +249,12 @@ False positives and false negatives can occur. Do not rely solely on this tool f
 
 ## 📧 Contact
 
+**Kartik Koul**
+- LinkedIn: [Kartik Koul](https://www.linkedin.com/in/kartik-koul)
+- GitHub: [@KARTIK-ALTF4](https://github.com/KARTIK-ALTF4)
+
+Feel free to reach out for collaborations or opportunities!
+
 ## 🤝 Contributing
 
 See [CONTRIBUTING.md](CONTRIBUTING.md) for contribution guidelines.
