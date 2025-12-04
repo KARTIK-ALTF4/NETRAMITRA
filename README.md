@@ -2,6 +2,8 @@
 
 A complete web-based cataract detection system using Deep Learning (EfficientNet-B0) with Grad-CAM visualization, built with Flask and PyTorch.
 
+**Author:** Kartik Koul
+
 ![Python](https://img.shields.io/badge/Python-3.9+-blue.svg)
 ![PyTorch](https://img.shields.io/badge/PyTorch-2.0+-red.svg)
 ![Flask](https://img.shields.io/badge/Flask-3.0+-green.svg)
@@ -247,19 +249,18 @@ False positives and false negatives can occur. Do not rely solely on this tool f
 
 ## 📧 Contact
 
-For questions or support:
-- Email: your.email@example.com
-- GitHub Issues: [Create an issue](https://github.com/YOUR_USERNAME/cataract-detection/issues)
+## 🤝 Contributing
 
-## 🔮 Future Enhancements
+See [CONTRIBUTING.md](CONTRIBUTING.md) for contribution guidelines.
 
-- [ ] Multi-language support (Spanish, French)
-- [ ] Severity grading (Early/Moderate/Severe)
-- [ ] Mobile app (Android/iOS)
-- [ ] Integration with hospital systems
-- [ ] Batch processing for clinics
-- [ ] Advanced analytics dashboard
+## 📄 License
+
+MIT License - see [LICENSE](LICENSE) file.
+
+## ⚠️ Disclaimer
+
+For educational purposes only. Not for medical diagnosis. Consult healthcare professionals.
 
 ---
 
-**Star ⭐ this repository if you find it helpful!**
+**Star ⭐ this repo if helpful!**
