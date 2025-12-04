@@ -9,13 +9,11 @@ A complete web-based cataract detection system using Deep Learning (EfficientNet
 
 ## 🌟 Features
 
-### Core Functionality
 - **Real-time Cataract Detection** - Upload eye images for instant AI analysis
-- **97%+ Accuracy** - EfficientNet-B0 model trained on eye images
-- **Grad-CAM Visualization** - Shows which parts of the eye are affected
-- **PDF Reports** - Download detailed medical reports with visualizations
-- **History Tracking** - View all previous scans and results
-- **User Authentication** - Secure login/registration system
+- **98-100% Accuracy** - EfficientNet-B0 model with transfer learning
+- **Grad-CAM Visualization** - Explainable AI showing affected regions
+- **PDF Reports** - Download detailed medical reports
+- **Patient History** - Track previous scans and results
 
 ### Advanced Features
 - **Eye Cropping** - Automatic eye region detection using Haar Cascades
