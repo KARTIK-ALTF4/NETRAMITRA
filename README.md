@@ -238,7 +238,7 @@ False positives and false negatives can occur. Do not rely solely on this tool f
 
 ## 👨‍💻 Authors
 
-- **Your Name** - Initial work
+- **Kartik Koul** - Initial work
 
 ## 🙏 Acknowledgments
 
