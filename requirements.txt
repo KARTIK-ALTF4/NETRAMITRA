@@ -1,0 +1,11 @@
+Flask==3.0.0
+Flask-SQLAlchemy==3.1.1
+Flask-CORS==4.0.0
+tensorflow==2.20.0
+keras==3.11.3
+opencv-python==4.11.0.86
+Pillow==11.3.0
+numpy==2.2.1
+matplotlib==3.10.0
+Werkzeug==3.0.1
+SQLAlchemy==2.0.36

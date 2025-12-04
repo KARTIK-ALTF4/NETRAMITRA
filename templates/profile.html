@@ -1,0 +1,385 @@
+<!DOCTYPE html>
+<html lang="en">
+<head>
+    <meta charset="UTF-8">
+    <meta name="viewport" content="width=device-width, initial-scale=1.0">
+    <title>My Profile - Cataract Detection</title>
+    <link rel="stylesheet" href="{{ url_for('static', filename='css/style.css') }}">
+    <style>
+        .profile-container {
+            max-width: 800px;
+            margin: 40px auto;
+            padding: 30px;
+            background: white;
+            border-radius: 15px;
+            box-shadow: 0 4px 20px rgba(0,0,0,0.1);
+        }
+        
+        .profile-header {
+            text-align: center;
+            margin-bottom: 40px;
+            padding-bottom: 20px;
+            border-bottom: 2px solid #e0e0e0;
+        }
+        
+        .profile-header h1 {
+            color: #2c3e50;
+            margin-bottom: 10px;
+        }
+        
+        .profile-avatar {
+            width: 120px;
+            height: 120px;
+            border-radius: 50%;
+            background: linear-gradient(135deg, #667eea 0%, #764ba2 100%);
+            color: white;
+            font-size: 48px;
+            display: flex;
+            align-items: center;
+            justify-content: center;
+            margin: 0 auto 20px;
+            font-weight: bold;
+        }
+        
+        .profile-info {
+            margin-bottom: 15px;
+        }
+        
+        .profile-info strong {
+            color: #555;
+            display: inline-block;
+            width: 200px;
+        }
+        
+        .form-group {
+            margin-bottom: 25px;
+        }
+        
+        .form-group label {
+            display: block;
+            margin-bottom: 8px;
+            color: #555;
+            font-weight: 600;
+        }
+        
+        .form-group input,
+        .form-group select,
+        .form-group textarea {
+            width: 100%;
+            padding: 12px;
+            border: 2px solid #e0e0e0;
+            border-radius: 8px;
+            font-size: 14px;
+            transition: border-color 0.3s;
+        }
+        
+        .form-group textarea {
+            min-height: 100px;
+            resize: vertical;
+            font-family: inherit;
+        }
+        
+        .form-group input:focus,
+        .form-group select:focus,
+        .form-group textarea:focus {
+            outline: none;
+            border-color: #667eea;
+        }
+        
+        .btn-group {
+            display: flex;
+            gap: 15px;
+            margin-top: 30px;
+        }
+        
+        .btn {
+            flex: 1;
+            padding: 15px;
+            border: none;
+            border-radius: 8px;
+            font-size: 16px;
+            font-weight: 600;
+            cursor: pointer;
+            transition: all 0.3s;
+        }
+        
+        .btn-primary {
+            background: linear-gradient(135deg, #667eea 0%, #764ba2 100%);
+            color: white;
+        }
+        
+        .btn-primary:hover {
+            transform: translateY(-2px);
+            box-shadow: 0 5px 15px rgba(102, 126, 234, 0.4);
+        }
+        
+        .btn-secondary {
+            background: #e0e0e0;
+            color: #555;
+        }
+        
+        .btn-secondary:hover {
+            background: #d0d0d0;
+        }
+        
+        .back-btn {
+            display: inline-block;
+            margin-bottom: 20px;
+            color: #667eea;
+            text-decoration: none;
+            font-weight: 600;
+        }
+        
+        .back-btn:hover {
+            text-decoration: underline;
+        }
+        
+        .success-message {
+            background: #d4edda;
+            color: #155724;
+            padding: 15px;
+            border-radius: 8px;
+            margin-bottom: 20px;
+            display: none;
+        }
+        
+        .edit-mode,
+        .view-mode {
+            display: none;
+        }
+        
+        .active {
+            display: block;
+        }
+    </style>
+</head>
+<body>
+    <div class="profile-container">
+        <a href="/" class="back-btn">← Back to Home</a>
+        
+        <div class="profile-header">
+            <div class="profile-avatar" id="avatar">?</div>
+            <h1 id="username">Loading...</h1>
+            <p style="color: #888;">Member since <span id="memberSince">...</span></p>
+        </div>
+        
+        <div class="success-message" id="successMessage">
+            ✅ Profile updated successfully!
+        </div>
+        
+        <!-- View Mode -->
+        <div class="view-mode" id="viewMode">
+            <div class="profile-info">
+                <strong>📧 Email:</strong>
+                <span id="viewEmail">-</span>
+            </div>
+            <div class="profile-info">
+                <strong>📱 Phone:</strong>
+                <span id="viewPhone">-</span>
+            </div>
+            <div class="profile-info">
+                <strong>👤 Age Group:</strong>
+                <span id="viewAgeGroup">-</span>
+            </div>
+            <div class="profile-info">
+                <strong>⚧️ Gender:</strong>
+                <span id="viewGender">-</span>
+            </div>
+            <div class="profile-info">
+                <strong>💼 Occupation:</strong>
+                <span id="viewOccupation">-</span>
+            </div>
+            <div class="profile-info">
+                <strong>🏥 Medical Conditions:</strong>
+                <span id="viewMedical">-</span>
+            </div>
+            <div class="profile-info">
+                <strong>👁️ Eye Problems History:</strong>
+                <span id="viewEyeHistory">-</span>
+            </div>
+            <div class="profile-info">
+                <strong>👨‍👩‍👧 Family History:</strong>
+                <span id="viewFamilyHistory">-</span>
+            </div>
+            
+            <div class="btn-group">
+                <button class="btn btn-primary" onclick="enableEditMode()">✏️ Edit Profile</button>
+            </div>
+        </div>
+        
+        <!-- Edit Mode -->
+        <div class="edit-mode" id="editMode">
+            <form id="profileForm" onsubmit="saveProfile(event)">
+                <div class="form-group">
+                    <label>📱 Phone Number</label>
+                    <input type="tel" id="phoneNumber" placeholder="Enter your phone number">
+                </div>
+                
+                <div class="form-group">
+                    <label>👤 Age Group</label>
+                    <select id="ageGroup" required>
+                        <option value="">Select age group</option>
+                        <option value="18-30">18-30 years</option>
+                        <option value="31-45">31-45 years</option>
+                        <option value="46-60">46-60 years</option>
+                        <option value="60+">60+ years</option>
+                    </select>
+                </div>
+                
+                <div class="form-group">
+                    <label>⚧️ Gender</label>
+                    <select id="gender" required>
+                        <option value="">Select gender</option>
+                        <option value="Male">Male</option>
+                        <option value="Female">Female</option>
+                        <option value="Other">Other</option>
+                    </select>
+                </div>
+                
+                <div class="form-group">
+                    <label>💼 Occupation</label>
+                    <select id="occupation">
+                        <option value="">Select occupation</option>
+                        <option value="Farmer">Farmer</option>
+                        <option value="Office Worker">Office Worker</option>
+                        <option value="Student">Student</option>
+                        <option value="Teacher">Teacher</option>
+                        <option value="Healthcare">Healthcare Professional</option>
+                        <option value="Business">Business Owner</option>
+                        <option value="Retired">Retired</option>
+                        <option value="Other">Other</option>
+                    </select>
+                </div>
+                
+                <div class="form-group">
+                    <label>🏥 Medical Conditions</label>
+                    <textarea id="medicalConditions" placeholder="e.g., Diabetes, Hypertension, etc. (Optional)"></textarea>
+                </div>
+                
+                <div class="form-group">
+                    <label>👁️ Eye Problems History</label>
+                    <textarea id="eyeHistory" placeholder="Any previous eye problems or surgeries? (Optional)"></textarea>
+                </div>
+                
+                <div class="form-group">
+                    <label>👨‍👩‍👧 Family History of Cataracts</label>
+                    <textarea id="familyHistory" placeholder="Does anyone in your family have cataracts? (Optional)"></textarea>
+                </div>
+                
+                <div class="btn-group">
+                    <button type="button" class="btn btn-secondary" onclick="cancelEdit()">Cancel</button>
+                    <button type="submit" class="btn btn-primary">💾 Save Changes</button>
+                </div>
+            </form>
+        </div>
+    </div>
+    
+    <script>
+        let currentProfile = null;
+        
+        // Load profile on page load
+        window.onload = function() {
+            loadProfile();
+        };
+        
+        function loadProfile() {
+            fetch('/api/profile')
+                .then(response => response.json())
+                .then(data => {
+                    if (data.success) {
+                        currentProfile = data.profile;
+                        displayProfile();
+                    } else {
+                        alert('Please login first');
+                        window.location.href = '/';
+                    }
+                })
+                .catch(error => {
+                    console.error('Error loading profile:', error);
+                });
+        }
+        
+        function displayProfile() {
+            // Header
+            document.getElementById('username').textContent = currentProfile.username;
+            document.getElementById('memberSince').textContent = currentProfile.member_since;
+            document.getElementById('avatar').textContent = currentProfile.username.charAt(0).toUpperCase();
+            
+            // View mode
+            document.getElementById('viewEmail').textContent = currentProfile.email || '-';
+            document.getElementById('viewPhone').textContent = currentProfile.phone_number || 'Not provided';
+            document.getElementById('viewAgeGroup').textContent = currentProfile.age_group || 'Not provided';
+            document.getElementById('viewGender').textContent = currentProfile.gender || 'Not provided';
+            document.getElementById('viewOccupation').textContent = currentProfile.occupation || 'Not provided';
+            document.getElementById('viewMedical').textContent = currentProfile.medical_conditions || 'None';
+            document.getElementById('viewEyeHistory').textContent = currentProfile.eye_problems_history || 'None';
+            document.getElementById('viewFamilyHistory').textContent = currentProfile.family_history || 'None';
+            
+            // Show view mode
+            document.getElementById('viewMode').classList.add('active');
+            document.getElementById('editMode').classList.remove('active');
+        }
+        
+        function enableEditMode() {
+            // Populate form
+            document.getElementById('phoneNumber').value = currentProfile.phone_number || '';
+            document.getElementById('ageGroup').value = currentProfile.age_group || '';
+            document.getElementById('gender').value = currentProfile.gender || '';
+            document.getElementById('occupation').value = currentProfile.occupation || '';
+            document.getElementById('medicalConditions').value = currentProfile.medical_conditions || '';
+            document.getElementById('eyeHistory').value = currentProfile.eye_problems_history || '';
+            document.getElementById('familyHistory').value = currentProfile.family_history || '';
+            
+            // Show edit mode
+            document.getElementById('viewMode').classList.remove('active');
+            document.getElementById('editMode').classList.add('active');
+        }
+        
+        function cancelEdit() {
+            document.getElementById('viewMode').classList.add('active');
+            document.getElementById('editMode').classList.remove('active');
+        }
+        
+        function saveProfile(event) {
+            event.preventDefault();
+            
+            const profileData = {
+                phone_number: document.getElementById('phoneNumber').value,
+                age_group: document.getElementById('ageGroup').value,
+                gender: document.getElementById('gender').value,
+                occupation: document.getElementById('occupation').value,
+                medical_conditions: document.getElementById('medicalConditions').value,
+                eye_problems_history: document.getElementById('eyeHistory').value,
+                family_history: document.getElementById('familyHistory').value
+            };
+            
+            fetch('/api/profile', {
+                method: 'POST',
+                headers: {
+                    'Content-Type': 'application/json'
+                },
+                body: JSON.stringify(profileData)
+            })
+            .then(response => response.json())
+            .then(data => {
+                if (data.success) {
+                    // Show success message
+                    document.getElementById('successMessage').style.display = 'block';
+                    setTimeout(() => {
+                        document.getElementById('successMessage').style.display = 'none';
+                    }, 3000);
+                    
+                    // Reload profile
+                    loadProfile();
+                } else {
+                    alert('Error updating profile: ' + data.message);
+                }
+            })
+            .catch(error => {
+                console.error('Error saving profile:', error);
+                alert('Error saving profile');
+            });
+        }
+    </script>
+</body>
+</html>

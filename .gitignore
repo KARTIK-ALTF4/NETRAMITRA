@@ -1,0 +1,90 @@
+# Python
+__pycache__/
+*.py[cod]
+*$py.class
+*.so
+.Python
+env/
+venv/
+ENV/
+build/
+develop-eggs/
+dist/
+downloads/
+eggs/
+.eggs/
+lib/
+lib64/
+parts/
+sdist/
+var/
+wheels/
+*.egg-info/
+.installed.cfg
+*.egg
+
+# PyTorch
+pytorch_checkpoints/*.pth
+pytorch_runs/
+checkpoints/
+runs/
+
+# Database
+instance/*.db
+*.sqlite
+*.sqlite3
+
+# Uploads & Generated Files
+uploads/*
+!uploads/.gitkeep
+uploads_cropped/*
+!uploads_cropped/.gitkeep
+reports/*
+!reports/.gitkeep
+gradcam_results/
+
+# Data (too large for GitHub)
+data/
+data_cropped/
+dataset/
+mixed_data/
+comprehensive_data/
+eye_crops/
+
+# Models
+models/*.h5
+models/*.caffemodel
+*.caffemodel
+deploy.prototxt
+res10_300x300_ssd_iter_140000_fp16.caffemodel
+
+# IDE
+.vscode/
+.idea/
+*.swp
+*.swo
+*~
+
+# OS
+.DS_Store
+Thumbs.db
+desktop.ini
+
+# Logs
+*.log
+logs/
+training_logs/
+
+# Environment variables
+.env
+.env.local
+
+# Jupyter Notebook
+.ipynb_checkpoints
+
+# Generated comparison images
+model_comparison.png
+model_comparison_full.png
+
+# Documentation builds
+model_documentation/

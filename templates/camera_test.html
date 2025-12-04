@@ -1,0 +1,161 @@
+<!DOCTYPE html>
+<html>
+<head>
+    <title>Camera Test</title>
+    <style>
+        body {
+            font-family: Arial, sans-serif;
+            max-width: 800px;
+            margin: 50px auto;
+            padding: 20px;
+        }
+        video {
+            width: 100%;
+            max-width: 640px;
+            border: 2px solid #667eea;
+            border-radius: 10px;
+        }
+        button {
+            background: #667eea;
+            color: white;
+            border: none;
+            padding: 15px 30px;
+            font-size: 16px;
+            border-radius: 5px;
+            cursor: pointer;
+            margin: 10px 5px;
+        }
+        button:hover {
+            background: #5568d3;
+        }
+        #info {
+            background: #f0f0f0;
+            padding: 15px;
+            border-radius: 5px;
+            margin: 20px 0;
+            font-family: monospace;
+            white-space: pre-wrap;
+        }
+        .error {
+            background: #ffebee;
+            color: #c62828;
+        }
+        .success {
+            background: #e8f5e9;
+            color: #2e7d32;
+        }
+    </style>
+</head>
+<body>
+    <h1>🎥 Camera Test Page</h1>
+    <p>This page will help diagnose camera issues.</p>
+    
+    <div id="info">Checking browser compatibility...</div>
+    
+    <button onclick="startCamera()">Start Camera</button>
+    <button onclick="stopCamera()">Stop Camera</button>
+    
+    <div style="margin-top: 20px;">
+        <video id="video" autoplay playsinline></video>
+    </div>
+    
+    <script>
+        let stream = null;
+        const video = document.getElementById('video');
+        const info = document.getElementById('info');
+        
+        // Check browser support
+        function checkSupport() {
+            let msg = 'Browser Info:\n';
+            msg += '─────────────────\n';
+            msg += 'User Agent: ' + navigator.userAgent + '\n\n';
+            msg += 'Protocol: ' + window.location.protocol + '\n';
+            msg += 'Hostname: ' + window.location.hostname + '\n\n';
+            
+            msg += 'Media Devices API:\n';
+            msg += '  navigator.mediaDevices: ' + (!!navigator.mediaDevices ? '✅ YES' : '❌ NO') + '\n';
+            msg += '  getUserMedia: ' + (navigator.mediaDevices && navigator.mediaDevices.getUserMedia ? '✅ YES' : '❌ NO') + '\n\n';
+            
+            msg += 'Legacy APIs:\n';
+            msg += '  webkitGetUserMedia: ' + (!!navigator.webkitGetUserMedia ? '✅ YES' : '❌ NO') + '\n';
+            msg += '  mozGetUserMedia: ' + (!!navigator.mozGetUserMedia ? '✅ YES' : '❌ NO') + '\n';
+            msg += '  msGetUserMedia: ' + (!!navigator.msGetUserMedia ? '✅ YES' : '❌ NO') + '\n\n';
+            
+            if (navigator.mediaDevices && navigator.mediaDevices.enumerateDevices) {
+                navigator.mediaDevices.enumerateDevices()
+                    .then(devices => {
+                        const videoDevices = devices.filter(d => d.kind === 'videoinput');
+                        msg += 'Video Devices Found: ' + videoDevices.length + '\n';
+                        videoDevices.forEach((device, i) => {
+                            msg += '  ' + (i+1) + '. ' + (device.label || 'Camera ' + (i+1)) + '\n';
+                        });
+                        info.textContent = msg;
+                    });
+            } else {
+                msg += '❌ Cannot enumerate devices\n';
+                info.textContent = msg;
+            }
+        }
+        
+        async function startCamera() {
+            try {
+                info.textContent = 'Starting camera...';
+                info.className = '';
+                
+                const constraints = {
+                    video: {
+                        facingMode: 'user',
+                        width: { ideal: 640 },
+                        height: { ideal: 480 }
+                    },
+                    audio: false
+                };
+                
+                console.log('Requesting camera with constraints:', constraints);
+                
+                stream = await navigator.mediaDevices.getUserMedia(constraints);
+                
+                console.log('Stream obtained:', stream);
+                
+                video.srcObject = stream;
+                
+                info.textContent = '✅ Camera started successfully!';
+                info.className = 'success';
+                
+            } catch (error) {
+                console.error('Camera error:', error);
+                
+                let msg = '❌ Camera Error:\n\n';
+                msg += 'Name: ' + error.name + '\n';
+                msg += 'Message: ' + error.message + '\n\n';
+                
+                if (error.name === 'NotAllowedError') {
+                    msg += 'Solution: Click "Allow" when browser asks for camera permission';
+                } else if (error.name === 'NotFoundError') {
+                    msg += 'Solution: Check if camera is connected';
+                } else if (error.name === 'NotReadableError') {
+                    msg += 'Solution: Close other apps using camera';
+                } else {
+                    msg += 'Solution: Try different browser (Chrome/Edge/Firefox)';
+                }
+                
+                info.textContent = msg;
+                info.className = 'error';
+            }
+        }
+        
+        function stopCamera() {
+            if (stream) {
+                stream.getTracks().forEach(track => track.stop());
+                video.srcObject = null;
+                stream = null;
+                info.textContent = 'Camera stopped';
+                info.className = '';
+            }
+        }
+        
+        // Run check on load
+        checkSupport();
+    </script>
+</body>
+</html>
