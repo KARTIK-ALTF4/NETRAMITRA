@@ -1,4 +1,4 @@
-# 👁️ AI-Powered Cataract Detection System
+# 👁️ NETRAMITRA - AI-Powered Cataract Detection System
 
 A complete web-based cataract detection system using Deep Learning (EfficientNet-B0) with Grad-CAM visualization, built with Flask and PyTorch.
 
@@ -49,8 +49,8 @@ A complete web-based cataract detection system using Deep Learning (EfficientNet
 
 1. **Clone the repository**
 ```bash
-git clone https://github.com/YOUR_USERNAME/cataract-detection.git
-cd cataract-detection
+git clone https://github.com/YOUR_USERNAME/netramitra.git
+cd netramitra
 ```
 
 2. **Install dependencies**
@@ -80,7 +80,7 @@ http://localhost:5000
 ## 📁 Project Structure
 
 ```
-cataract-detection/
+netramitra/
 ├── app.py                          # Main Flask application
 ├── model.py                        # PyTorch model definition
 ├── dataloader.py                   # Dataset loader and augmentations

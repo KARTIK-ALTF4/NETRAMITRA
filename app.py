@@ -83,7 +83,7 @@ class ChatHistory(db.Model):
 with app.app_context():
     db.create_all()
 
-# Load PyTorch Model with Eye Cropping
+
 print("Loading PyTorch model with eye cropping...")
 try:
     import torch
@@ -93,7 +93,7 @@ try:
     import numpy as np
     from model import create_model
     
-    # Eye cropping function (same as training)
+    
     def crop_eye_from_image(image_path, padding=0.15, output_size=(224, 224)):
         """Crop eye region from image (removes eyebrows)"""
         img = cv2.imread(image_path)
@@ -105,7 +105,7 @@ try:
         eyes = eye_cascade.detectMultiScale(gray, 1.1, 5, minSize=(50, 50))
         
         if len(eyes) == 0:
-            # Fallback: center crop
+            #
             h, w = img.shape[:2]
             crop_size = min(h, w) // 2
             center_x, center_y = w // 2, h // 2
@@ -115,7 +115,7 @@ try:
             y2 = min(h, y1 + crop_size)
             cropped = img[y1:y2, x1:x2]
         else:
-            # Use largest detected eye
+            
             (x, y, w, h) = max(eyes, key=lambda e: e[2] * e[3])
             pad_x = int(w * padding)
             pad_y = int(h * padding)
@@ -125,7 +125,7 @@ try:
             y2 = min(img.shape[0], y + h + pad_y)
             cropped = img[y1:y2, x1:x2]
         
-        # Convert to PIL and resize
+       
         cropped = cv2.cvtColor(cropped, cv2.COLOR_BGR2RGB)
         cropped_pil = Image.fromarray(cropped)
         cropped_pil = cropped_pil.resize(output_size, Image.Resampling.LANCZOS)
@@ -162,7 +162,7 @@ EMAIL_HOST = 'smtp.gmail.com'
 EMAIL_PORT = 587
 EMAIL_USER = 'your-email@gmail.com'  # Update this
 EMAIL_PASSWORD = 'your-app-password'  # Update this (use app-specific password)
-EMAIL_FROM = 'Cataract AI <your-email@gmail.com>'
+EMAIL_FROM = 'NETRAMITRA <your-email@gmail.com>'
 
 # SMS Configuration (Using Twilio - Update with your credentials)
 TWILIO_ACCOUNT_SID = 'your-twilio-sid'  # Update this
@@ -176,7 +176,7 @@ def send_email_notification(user_email, username, result, confidence, pdf_path=N
         msg = MIMEMultipart()
         msg['From'] = EMAIL_FROM
         msg['To'] = user_email
-        msg['Subject'] = f'Cataract Detection Result - {result}'
+        msg['Subject'] = f'NETRAMITRA Detection Result - {result}'
         
         # Email body
         has_cataract = 'Cataract Detected' in result
@@ -185,7 +185,7 @@ def send_email_notification(user_email, username, result, confidence, pdf_path=N
         <html>
             <body style="font-family: Arial, sans-serif; max-width: 600px; margin: 0 auto;">
                 <div style="background: linear-gradient(135deg, #667eea 0%, #764ba2 100%); padding: 20px; text-align: center;">
-                    <h1 style="color: white; margin: 0;">Cataract AI Detection Report</h1>
+                    <h1 style="color: white; margin: 0;">NETRAMITRA Detection Report</h1>
                 </div>
                 
                 <div style="padding: 30px; background-color: #f9f9f9;">
@@ -215,7 +215,7 @@ def send_email_notification(user_email, username, result, confidence, pdf_path=N
                 </div>
                 
                 <div style="background-color: #2c3e50; color: white; padding: 15px; text-align: center;">
-                    <p style="margin: 0;">© 2024 Cataract AI - Accessible Eye Care for Everyone</p>
+                    <p style="margin: 0;">© 2024 NETRAMITRA - Accessible Eye Care for Everyone</p>
                 </div>
             </body>
         </html>
@@ -256,7 +256,7 @@ def send_sms_notification(phone_number, username, result, confidence):
         has_cataract = 'Cataract Detected' in result
         
         message_body = f"""
-Cataract AI Alert for {username}
+NETRAMITRA Alert for {username}
 
 {'⚠️ CATARACT DETECTED' if has_cataract else '✅ NO CATARACT DETECTED'}
 Confidence: {confidence:.1f}%
@@ -266,7 +266,7 @@ Date: {datetime.now().strftime('%Y-%m-%d %H:%M')}
 
 This is a screening result, not a medical diagnosis.
 
-- Cataract AI
+- NETRAMITRA
         """
         
         message = client.messages.create(
@@ -754,7 +754,7 @@ def download_report(prediction_id):
         spaceAfter=30,
         alignment=TA_CENTER
     )
-    story.append(Paragraph('Cataract Detection Report', title_style))
+    story.append(Paragraph('NETRAMITRA Detection Report', title_style))
     story.append(Spacer(1, 0.3*inch))
     
     # Patient/User Info
